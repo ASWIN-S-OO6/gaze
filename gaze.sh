@@ -175,6 +175,69 @@ upgrade_tools() {
     fi
 }
 
+browse_categories() {
+    while true; do
+        CAT_CHOICE=$(whiptail --title "Browse Categories" --menu "Select a Category:" 20 70 12 \
+            "kali-tools-information-gathering" "Information Gathering" \
+            "kali-tools-vulnerability" "Vulnerability Analysis" \
+            "kali-tools-web" "Web Application Analysis" \
+            "kali-tools-database" "Database Assessment" \
+            "kali-tools-passwords" "Password Attacks" \
+            "kali-tools-wireless" "Wireless Attacks" \
+            "kali-tools-reverse-engineering" "Reverse Engineering" \
+            "kali-tools-exploitation" "Exploitation Tools" \
+            "kali-tools-social-engineering" "Social Engineering" \
+            "kali-tools-sniffing-spoofing" "Sniffing & Spoofing" \
+            "kali-tools-post-exploitation" "Post Exploitation" \
+            "kali-tools-forensics" "Forensics" \
+            "kali-tools-reporting" "Reporting Tools" \
+            "Back" "Return to Main Menu" 3>&1 1>&2 2>&3)
+
+        if [ $? -ne 0 ] || [ "$CAT_CHOICE" = "Back" ]; then
+            break
+        fi
+
+        CATEGORY="$CAT_CHOICE"
+
+        while true; do
+            ACTION=$(whiptail --title "Category: $CATEGORY" --menu "Choose an action:" 14 60 3 \
+                "1" "View Tools in Category" \
+                "2" "Install Entire Category" \
+                "3" "Back" 3>&1 1>&2 2>&3)
+
+            if [ $? -ne 0 ] || [ "$ACTION" = "3" ]; then
+                break
+            fi
+
+            if [ "$ACTION" = "1" ]; then
+                TMP_OUT=$(mktemp)
+                run_apt_cache depends "$CATEGORY" 2>/dev/null | grep -E "  Depends:|  Recommends:" | cut -d':' -f2 | tr -d ' ' | sort -u | column -c 70 > "$TMP_OUT"
+                if [ -s "$TMP_OUT" ]; then
+                    whiptail --title "Tools in $CATEGORY" --scrolltext --textbox "$TMP_OUT" 22 80
+                else
+                    whiptail --title "Error" --msgbox "Could not fetch tools. Make sure you updated the Kali Repo Lists." 10 60
+                fi
+                rm -f "$TMP_OUT"
+            elif [ "$ACTION" = "2" ]; then
+                TMP_OUT=$(mktemp)
+                export DEBIAN_FRONTEND=noninteractive
+                run_apt -y install "$CATEGORY" -o APT::Status-Fd=3 > "$TMP_OUT" 2>&1 3> >( \
+                    awk -F: '/^pmstatus:/ || /^dlstatus:/ { print $3; fflush() }' | \
+                    whiptail --title "Installing $CATEGORY" --gauge "Installing tools..." 10 60 0 \
+                )
+                if [ $? -eq 0 ]; then
+                    echo "$CATEGORY" >> "$GAZE_DIR/installed_tools.log"
+                    sort -u "$GAZE_DIR/installed_tools.log" -o "$GAZE_DIR/installed_tools.log"
+                    whiptail --title "Success" --msgbox "$CATEGORY has been successfully installed." 10 60
+                else
+                    whiptail --title "Installation Failed" --scrolltext --textbox "$TMP_OUT" 20 80
+                fi
+                rm -f "$TMP_OUT"
+            fi
+        done
+    done
+}
+
 main_menu() {
     # Initial repository sync if empty
     if [ -z "$(ls -A "$GAZE_LIB/lists" 2>/dev/null | grep -v 'partial')" ]; then
@@ -189,14 +252,15 @@ main_menu() {
     fi
 
     while true; do
-        CHOICE=$(whiptail --title "Gaze - Pentest Toolkit Manager ($OS_NAME)" --menu "Choose an action:" 16 70 7 \
+        CHOICE=$(whiptail --title "Gaze - Pentest Toolkit Manager ($OS_NAME)" --menu "Choose an action:" 18 70 8 \
             "1" "Search for a Tool" \
             "2" "Install a Tool" \
-            "3" "Uninstall a Tool" \
-            "4" "List Installed Tools" \
-            "5" "Update Kali Repo Lists" \
-            "6" "Upgrade Gaze Tools" \
-            "7" "Exit" 3>&1 1>&2 2>&3)
+            "3" "Browse Categories" \
+            "4" "Uninstall a Tool" \
+            "5" "List Installed Tools" \
+            "6" "Update Kali Repo Lists" \
+            "7" "Upgrade Gaze Tools" \
+            "8" "Exit" 3>&1 1>&2 2>&3)
 
         if [ $? -ne 0 ]; then
             break
@@ -205,11 +269,12 @@ main_menu() {
         case $CHOICE in
             1) search_tool ;;
             2) install_tool ;;
-            3) uninstall_tool ;;
-            4) list_tools ;;
-            5) update_lists ;;
-            6) upgrade_tools ;;
-            7) break ;;
+            3) browse_categories ;;
+            4) uninstall_tool ;;
+            5) list_tools ;;
+            6) update_lists ;;
+            7) upgrade_tools ;;
+            8) break ;;
         esac
     done
     

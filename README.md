@@ -30,6 +30,7 @@ sudo gaze
 ```
 
 ## 🛠️ Features
+- **Browse Categories:** Install tools by category (e.g., Information Gathering, Web Analysis, Exploitation). You can view all tools in a category formatted in rows/columns, or install the entire category at once (similar to BlackArch).
 - **Search:** Quickly search the massive Kali Linux repository for specific tools (e.g., `nmap`, `gobuster`, `metasploit-framework`).
 - **Install & Uninstall:** Install pentesting tools seamlessly. Dependencies are automatically resolved and fetched.
 - **List Installed Tools:** Keep track of exactly what packages you have installed through Gaze.
