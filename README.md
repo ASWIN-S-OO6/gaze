@@ -1,6 +1,6 @@
-# Gaze - Kali Repository Wrapper 👁️
+# Gaze - Kali Repository Wrapper 
 
-Gaze is a powerful, isolated CLI utility that allows you to securely turn any Debian-based Linux distribution (like Parrot OS, Ubuntu, Debian, or Zorin) into a full-fledged Penetration Testing distribution by safely accessing the Kali Linux repositories.
+Gaze is a powerful, isolated CLI utility that allows you to securely turn any Debian-based Linux distribution (like Ubuntu, linux mint, or Zorin) into a full-fledged Penetration Testing distribution by safely accessing the Kali Linux repositories.
 
 ## ❓ Why use Gaze?
 Adding Kali repositories directly to your host system's `sources.list` is extremely dangerous and can break your OS during normal updates (creating what is known as a "FrankenDebian"). 
@@ -38,7 +38,7 @@ sudo gaze
 
 ## 💻 Compatibility
 Gaze is designed to work on any Debian-based Linux distribution that utilizes the APT package manager, including:
-- Parrot OS
+
 - Ubuntu
 - Linux Mint
 - Zorin OS
